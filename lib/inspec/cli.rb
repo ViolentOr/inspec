@@ -156,7 +156,6 @@ class Inspec::InspecCLI < Inspec::BaseCLI
     o = opts(:exec).dup
     configure_logger(o)
 
-    # check for deprecated --cache
     # TODO: REMOVE for inspec 2.0
     if o.key?('cache')
       o[:vendor_cache] = o[:cache]
@@ -199,7 +198,7 @@ class Inspec::InspecCLI < Inspec::BaseCLI
     desc: 'A space-delimited list of local folders containing profiles whose libraries and resources will be loaded into the new shell'
   def shell_func
     diagnose
-    o = opts.dup
+    o = opts(:shell).dup
     o[:debug_shell] = true
 
     json_output = ['json', 'json-min'].include?(opts['format'])
@@ -261,7 +260,7 @@ class Inspec::InspecCLI < Inspec::BaseCLI
   private
 
   def run_command(opts)
-    runner = Inspec::Runner.new(opts)
+    runner = Inspec::Runner.new(opts(:shell))
     res = runner.eval_with_virtual_profile(opts[:command])
     runner.load
 

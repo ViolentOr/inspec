@@ -98,7 +98,13 @@ module Inspec
     def run(with = nil)
       Inspec::Log.debug "Starting run with targets: #{@target_profiles.map(&:to_s)}"
       load
-      run_data = run_tests(with)
+      run_tests(with)
+    end
+
+    def render_output(run_data)
+      @conf[:reporter].each do |k, v|
+        Inspec::Reporters.render(k, v, run_data)
+      end
     end
 
     def write_lockfile(profile)
@@ -114,7 +120,9 @@ module Inspec
     end
 
     def run_tests(with = nil)
-      @test_collector.run(with)
+      status, run_data = @test_collector.run(with)
+      render_output(run_data)
+      status
     end
 
     # determine all attributes before the execution, fetch data from secrets backend
