@@ -3,7 +3,6 @@ require 'json'
 module Inspec::Reporters
   class JsonMin < Base
     def render
-
       report = {
         controls: [],
         statistics: { duration: run_data[:statistics][:duration] },

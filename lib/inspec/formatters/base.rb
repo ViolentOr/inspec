@@ -67,7 +67,7 @@ module Inspec::Formatters
       run_data[:platform] = {
         name: platform(:name),
         release: platform(:release),
-        target: backend_target
+        target: backend_target,
       }
     end
 
@@ -96,7 +96,7 @@ module Inspec::Formatters
     #
     # Called after test execution, this allows us to populate our own hash with data
     # for this test that is necessary for the rest of our reports.
-    def format_example(example)
+    def format_example(example) # rubocop:disable Metrics/AbcSize
       if !example.metadata[:description_args].empty? && example.metadata[:skip]
         # For skipped profiles, rspec returns in full_description the skip_message as well. We don't want
         # to mix the two, so we pick the full_description from the example.metadata[:example_group] hash.
@@ -112,7 +112,6 @@ module Inspec::Formatters
         code_desc: code_description,
         run_time: example.execution_result.run_time,
         start_time: example.execution_result.started_at.to_s,
-        # resource_title: example.metadata[:described_class],
         resource_title: example.metadata[:example_group][:description],
         expectation_message: format_expectation_message(example),
       }
@@ -132,7 +131,7 @@ module Inspec::Formatters
 
     def format_expectation_message(example)
       if (example.metadata[:example_group][:description_args].first == example.metadata[:example_group][:described_class]) ||
-          example.metadata[:example_group][:described_class].nil?
+         example.metadata[:example_group][:described_class].nil?
         example.metadata[:description]
       else
         "#{example.metadata[:example_group][:description]} #{example.metadata[:description]}"
@@ -168,7 +167,7 @@ module Inspec::Formatters
 
     def example2control(example)
       profile = profile_from_example(example)
-      return nil unless profile && profile[:controls]
+      return nil unless profile&.[](:controls)
       profile[:controls].find { |x| x[:id] == example[:id] }
     end
 

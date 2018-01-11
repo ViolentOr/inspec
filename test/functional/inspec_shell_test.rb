@@ -21,9 +21,9 @@ describe 'inspec shell tests' do
       res.stdout.chop.must_equal 'gordon_config'
     end
 
-    it 'confirm file caching is enabled' do
+    it 'confirm file caching is disabled' do
       out = do_shell_c('inspec.backend.cache_enabled?(:file)', 0)
-      out.stdout.chop.must_equal 'true'
+      out.stdout.chop.must_equal 'false'
     end
 
     it 'confirm command caching is disabled' do

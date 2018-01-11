@@ -57,14 +57,16 @@ module Inspec
       profile_options
       option :controls, type: :array,
         desc: 'A list of controls to run. Ignore all other tests.'
+      # TODO: remove in inspec 2.0
       option :format, type: :string,
         desc: '[DEPRECATED] Please use --format - this will be removed in InSpec 2.0'
       option :reporter, type: :array,
-        desc: 'Which reporter(s) to use: cli, json, json-min, json-rspec, junit'
+        desc: 'Which reporter(s) to use: cli, documentation, html, progress, json, json-min, json-rspec, junit'
       option :color, type: :boolean,
         desc: 'Use colors in output.'
       option :attrs, type: :array,
         desc: 'Load attributes file (experimental)'
+      # TODO: remove in inspec 2.0
       option :cache, type: :string,
         desc: '[DEPRECATED] Please use --vendor-cache - this will be removed in InSpec 2.0'
       option :vendor_cache, type: :string,
@@ -92,7 +94,7 @@ module Inspec
     # helper method to run tests
     def run_tests(targets, opts)
       o = opts.dup
-      log_device = opts['format'] == 'json' ? nil : STDOUT
+      log_device = o[:reporter].keys.grep(/json/).any? ? nil : STDOUT
       o[:logger] = Logger.new(log_device)
       o[:logger].level = get_log_level(o.log_level)
 
@@ -104,7 +106,7 @@ module Inspec
       exit 1
     end
 
-    def diagnose
+    def diagnose(opts)
       return unless opts['diagnose']
       puts "InSpec version: #{Inspec::VERSION}"
       puts "Train version: #{Train::VERSION}"
@@ -147,7 +149,7 @@ module Inspec
       opts.merge!(options)
 
       # clean up reports
-      clean_reporters(opts) if [:exec, :shell].include? type
+      clean_reporters(opts) if %i(exec shell).include? type
 
       Thor::CoreExt::HashWithIndifferentAccess.new(opts)
     end
@@ -254,7 +256,7 @@ module Inspec
 
       o[:logger] = Logger.new(STDOUT)
       # output json if we have activated the json formatter
-      if opts['log-format'] == 'json'
+      if o['log-format'] == 'json'
         o[:logger].formatter = Logger::JSONFormatter.new
       end
       o[:logger].level = get_log_level(o.log_level)

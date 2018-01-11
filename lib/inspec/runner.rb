@@ -107,6 +107,12 @@ module Inspec
       end
     end
 
+    def render_output(run_data)
+      @conf[:reporter].each do |k, v|
+        Inspec::Reporters.render(k, v, run_data)
+      end
+    end
+
     def write_lockfile(profile)
       return false if !profile.writable?
 

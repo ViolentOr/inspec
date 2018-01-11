@@ -92,7 +92,7 @@ module Inspec::Reporters
         end
       end
 
-      @test_summary = { 'total' => total, 'failed' => failed, 'skipped' => skipped, 'passed' => passed }
+      @tests_summary = { 'total' => total, 'failed' => failed, 'skipped' => skipped, 'passed' => passed }
     end
   end
 end

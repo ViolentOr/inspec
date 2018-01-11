@@ -112,7 +112,7 @@ module Inspec
         @conf[:reporter].delete('json-rspec')
       end
 
-      formats = @conf[:reporter].select { |k, _v| %w{documentation progress}.include?(k) }
+      formats = @conf[:reporter].select { |k, _v| %w{documentation progress html}.include?(k) }
       formats.each do |k, v|
         if v.nil?
           RSpec.configuration.add_formatter(k.to_sym)

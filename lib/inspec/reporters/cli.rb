@@ -54,7 +54,7 @@ module Inspec::Reporters
 
     def render
       run_data[:profiles].each do |profile|
-        @test_count = 0
+        @control_count = 0
         output ''
         print_profile_header(profile)
         print_standard_control_results(profile)
@@ -62,7 +62,7 @@ module Inspec::Reporters
         output format_message(
           indentation: 5,
           message: 'No tests executed.',
-        ) if @test_count == 0
+        ) if @control_count == 0
       end
 
       output ''
@@ -87,10 +87,10 @@ module Inspec::Reporters
         output format_control_header(control)
         control.results.each do |result|
           output format_result(control, result, :standard)
-          @test_count += 1
+          @control_count += 1
         end
       end
-      output '' if @test_count > 0
+      output '' if @control_count > 0
     end
 
     def print_anonymous_control_results(profile)
@@ -100,14 +100,14 @@ module Inspec::Reporters
         output format_control_header(control)
         control.results.each do |result|
           output format_result(control, result, :anonymous)
-          @test_count += 1
+          @control_count += 1
         end
       end
     end
 
     def format_profile_name(profile)
       if profile[:title].nil?
-        "#{profile[:name] || 'unknown'}"
+        (profile[:name] || 'unknown').to_s
       else
         "#{profile[:title]} (#{profile[:name] || 'unknown'})"
       end
@@ -118,7 +118,7 @@ module Inspec::Reporters
       format_message(
         color: impact,
         indicator: impact,
-        message: control.title_for_report
+        message: control.title_for_report,
       )
     end
 
@@ -156,11 +156,12 @@ module Inspec::Reporters
       failed_color = summary['failed']['total'] > 0 ? 'failed' : 'no_color'
       skipped_color = summary['skipped'] > 0 ? 'skipped' : 'no_color'
 
-      s = format('Profile Summary: %s, %s, %s',
-                 format_with_color(success_color, success_str),
-                 format_with_color(failed_color, failed_str),
-                 format_with_color(skipped_color, skipped_str),
-                )
+      s = format(
+        'Profile Summary: %s, %s, %s',
+        format_with_color(success_color, success_str),
+        format_with_color(failed_color, failed_str),
+        format_with_color(skipped_color, skipped_str),
+      )
       output(s) if summary['total'] > 0
     end
 
@@ -173,15 +174,15 @@ module Inspec::Reporters
       failed_color = summary['failed'] > 0 ? 'failed' : 'no_color'
       skipped_color = summary['skipped'] > 0 ? 'skipped' : 'no_color'
 
-      s = format('Test Summary: %s, %s, %s',
-                 format_with_color(success_color, "#{summary['passed']} successful"),
-                 format_with_color(failed_color, failed_str),
-                 format_with_color(skipped_color, "#{summary['skipped']} skipped"),
-                )
+      s = format(
+        'Test Summary: %s, %s, %s',
+        format_with_color(success_color, "#{summary['passed']} successful"),
+        format_with_color(failed_color, failed_str),
+        format_with_color(skipped_color, "#{summary['skipped']} skipped"),
+      )
 
       output(s)
     end
-
 
     def format_with_color(color_name, text)
       return text unless RSpec.configuration.color
@@ -191,7 +192,7 @@ module Inspec::Reporters
     end
 
     def standard_controls_from_profile(profile)
-      profile[:controls].select { |c| !is_anonymous_control?(c) }
+      profile[:controls].reject { |c| is_anonymous_control?(c) }
     end
 
     def anonymous_controls_from_profile(profile)
@@ -208,7 +209,7 @@ module Inspec::Reporters
       indentation = message_info.fetch(:indentation, 2)
       message = message_info[:message]
 
-      message_to_format = ""
+      message_to_format = ''
       message_to_format += "#{INDICATORS[indicator]}  " unless indicator.nil?
       message_to_format += message.to_s.strip
 
@@ -216,14 +217,14 @@ module Inspec::Reporters
     end
 
     def indent_lines(message, indentation)
-      message.lines.map { |line| " " * indentation + line }.join
+      message.lines.map { |line| ' ' * indentation + line }.join
     end
 
     class Control
       IMPACT_SCORES = {
         critical: 0.7,
         major: 0.4,
-      }
+      }.freeze
 
       attr_reader :data
 
@@ -273,7 +274,7 @@ module Inspec::Reporters
           nil
         elsif impact.nil?
           'unknown'
-        elsif results && results.find { |r| r[:status] == 'skipped' }
+        elsif results&.find { |r| r[:status] == 'skipped' }
           'skipped'
         elsif results.nil? || results.empty? || results.all? { |r| r[:status] == 'passed' }
           'passed'
